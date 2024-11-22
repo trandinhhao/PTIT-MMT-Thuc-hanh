@@ -1,0 +1,213 @@
+Bài 1:
+
+206.0.78.0/24
+v = 200
+n = 7
+SM cũ: 255.255.255.0 (24)
+SM mới:255.255.255.224(27)
+206.0.78.0/27
+206.0.78.32/27
+206.0.78.64/27
+206.0.78.96/27
+206.0.78.128/27
+206.0.78.160/27
+206.0.78.192/27
+206.0.78.224/27
+
+Bước 1: PC----------------------------------------
+
+--PC0 :
+206.0.78.2
+255.255.255.224
+206.0.78.1
+
+--PC1:
+206.0.78.3
+255.255.255.224
+206.0.78.1
+
+--PC2:
+206.0.78.34
+255.255.255.224
+206.0.78.33
+
+--PC3:
+206.0.78.35
+255.255.255.224
+206.0.78.33
+
+--PC4:
+206.0.78.162
+255.255.255.224
+206.0.78.161
+
+--PC5:
+206.0.78.163
+255.255.255.224
+206.0.78.161
+
+--PC6:
+206.0.78.194
+255.255.255.224
+206.0.78.193
+
+--PC7:
+206.0.78.195
+255.255.255.224
+206.0.78.193
+
+Bước 2: Switch------------------------------------
+
+--S-0:
+en
+conf t
+hostname S-0
+vlan 278
+ex
+vlan 279
+ex
+
+//Đối với PC trong vlan
+
+inter fa 0/2
+switchport access vlan 278
+ex
+inter fa 0/3
+switchport access vlan 278
+ex
+inter fa 0/4
+switchport access vlan 279
+ex
+inter fa 0/5
+switchport access vlan 279
+ex
+
+//Đối với Router
+inter fa 0/1
+switchport mode trunk
+
+--S-1:
+en
+conf t
+hostname S-1
+vlan 280
+ex
+vlan 281
+ex
+
+//Đối với PC trong vlan
+
+inter fa 0/2
+switchport access vlan 280
+ex
+inter fa 0/3
+switchport access vlan 280
+ex
+inter fa 0/4
+switchport access vlan 281
+ex
+inter fa 0/5
+switchport access vlan 281
+ex
+
+//Đối với Router
+inter fa 0/1
+switchport mode trunk
+
+Bước 3: Router------------------------------------
+
+--R-0:
+en
+conf t
+hostname R-0
+inter fa 0/0
+no sh
+ex
+
+inter fa 0/0.1
+encapsulation dot1Q 278
+ip add 206.0.78.1 255.255.255.224
+ex
+
+inter fa 0/0.2
+encapsulation dot1Q 279
+ip add 206.0.78.33 255.255.255.224
+ex
+
+inter se 0/0
+ip add 206.0.78.65 255.255.255.224
+no sh
+ex
+
+inter fa 0/1
+ip add 206.0.78.97 255.255.255.224
+no sh
+ex
+
+--R-1:
+en
+conf t
+hostname R-1
+inter fa 0/0
+no sh
+ex
+
+inter fa 0/0.1
+encapsulation dot1Q 280
+ip add 206.0.78.161 255.255.255.224
+ex
+
+inter fa 0/0.2
+encapsulation dot1Q 281
+ip add 206.0.78.193 255.255.255.224
+ex
+
+inter se 0/0
+ip add 206.0.78.66 255.255.255.224
+no sh
+ex
+
+inter fa 0/1
+ip add 206.0.78.130 255.255.255.224
+no sh
+ex
+
+--R-2:
+en
+conf t
+hostname R-2
+
+inter fa 0/0
+ip add 206.0.78.98 255.255.255.224
+no sh
+ex
+
+inter fa 0/1
+ip add 206.0.78.129 255.255.255.224
+no sh
+ex
+
+Bước 4: Show ip route của-------------------------
+
+R-0: 4 mạng => 0//32//64//96
+R-1: 4 mạng => 64//128//160//192
+R-2: 2 mạng => 96//128
+====> Phải 7 mạng cho mỗi cái
+
+--R-0:
+ip route 206.0.78.128 255.255.255.224 206.0.78.98
+ip route 206.0.78.160 255.255.255.224 206.0.78.66
+ip route 206.0.78.192 255.255.255.224 206.0.78.66
+
+--R-1:
+ip route 206.0.78.0 255.255.255.224 206.0.78.65 (lỗi)
+ip route 206.0.78.0 255.255.255.224 206.0.78.97 (sửa)
+ip route 206.0.78.32 255.255.255.224 206.0.78.97
+ip route 206.0.78.96 255.255.255.224 206.0.78.129
+
+--R-2:
+ip route 206.0.78.0 255.255.255.224 206.0.78.97
+ip route 206.0.78.32 255.255.255.224 206.0.78.97
+ip route 206.0.78.160 255.255.255.224 206.0.78.130
+ip route 206.0.78.192 255.255.255.224 206.0.78.130
+ip route 206.0.78.64 255.255.255.224 206.0.78.130
